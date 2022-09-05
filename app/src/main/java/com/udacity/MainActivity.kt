@@ -1,102 +1,130 @@
 package com.udacity
 
+import android.animation.ArgbEvaluator
+import android.animation.ValueAnimator
 import android.app.*
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.graphics.BitmapFactory
+import android.database.Cursor
 import android.graphics.Color
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.View
-import android.widget.Button
+import android.widget.ImageView
 import android.widget.RadioButton
+import android.widget.RadioGroup
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.constraintlayout.motion.widget.MotionLayout
 import androidx.core.app.NotificationCompat
-import androidx.core.app.NotificationManagerCompat
-import androidx.core.content.ContextCompat
-import androidx.core.content.getSystemService
-import com.google.android.material.appbar.AppBarLayout
+import androidx.databinding.DataBindingUtil
+import com.udacity.databinding.ActivityMainBinding
 import com.udacity.util.sendNotification
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
-import kotlin.math.PI
 
 
 class MainActivity : AppCompatActivity() {
 
+    private lateinit var viewModel: ViewModel
     private var downloadID: Long = 0
-    private val CHANAL_ID = "chanal_id"
-    private val NOTIFICATION_ID = 1002
 
+    enum class FileName(val value: String) {
+        x1("Glide"),
+        x2("Repository"),
+        x3("Retrofit");
+
+        companion object {
+            fun from(findValue: String): FileName =
+                FileName.values().first { it.value == findValue }
+        }
+    }
+
+    enum class FileStatus {
+        Completed,
+        Faliear
+    }
+
+    private lateinit var fileName: String
+    private lateinit var binding: ActivityMainBinding
     private lateinit var notificationManager: NotificationManager
     private lateinit var pendingIntent: PendingIntent
-    private lateinit var action: NotificationCompat.Action
+    lateinit var loadingButton: LoadingButton
+    private var complete = false
 
-
+    private var radioGroup: RadioGroup? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
         setSupportActionBar(toolbar)
-      val  button:Button = findViewById(R.id.button)
-
-        createChannalNotification()
+        move(binding.imageHeader)
+        createChannel(getString(R.string.notification_channel_id), "NOTIFICATION_Name")
+        loadingButton = findViewById(R.id.custom_button)
         custom_button.setOnClickListener {
+            //  radioGroupSelecte()
             download()
 
+            registerReceiver(receiver, IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE))
+            //  receiver.onReceive(this,intent)
+            complete = true
+            loadingButton.animation
+            notificationManager.sendNotification(FileName.x2.value, applicationContext)
         }
-        button.setOnClickListener {
-
-            setNotification()
-
+        if (complete) {
 
         }
+//        binding.radio!!.setOnCheckedChangeListener { group, checkedId ->
+//            // The flow will come here when
+//            // any of the radio buttons in the radioGroup
+//            // has been clicked
+//            // Check which radio button has been clicked
+//            // Get the selected Radio Button
+//            val radioButton = group
+//                .findViewById<View>(checkedId) as RadioButton
+//        }
+
     }
 
-    private fun createChannalNotification() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val name = "Notification Title"
-            val descriptionText = "Notification description"
-            val notificationChannel = NotificationChannel(
-                CHANAL_ID, name, NotificationManager.IMPORTANCE_DEFAULT
-            ).apply { description=descriptionText }
-            val notificationManager = this.getSystemService(NotificationManager::class.java)
-            notificationManager.createNotificationChannel(notificationChannel)
-            notificationChannel.enableLights(true)
-            notificationChannel.lightColor = Color.RED
-            notificationChannel.enableVibration(true)
-            notificationChannel.description = " time to build second project"
+    private fun radioGroupSelecte() {
+        val selectedId = radioGroup!!.checkedRadioButtonId
+        if (selectedId == -1) {
+            Toast.makeText(this, "No answer has been selected", Toast.LENGTH_SHORT).show()
+        } else {
+            val radioButton = radioGroup!!
+                .findViewById<View>(selectedId) as RadioButton
 
-        }
-    }
-    private fun setNotification(){
-            val intent=Intent(this,DetailActivity::class.java).apply {
-                flags=Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-            }
-        val pendingIntent:PendingIntent= PendingIntent.getActivity(this,0,intent,0)
-        val bitmap=BitmapFactory.decodeResource(applicationContext.resources,R.drawable.ic_baseline_cloud_download_24)
-        val bitmapLargeIcon=BitmapFactory.decodeResource(applicationContext.resources,R.drawable.ic_outline_cloud_download_24)
-
-        val builder=NotificationCompat.Builder(this,CHANAL_ID)
-            .setSmallIcon(R.drawable.ic_outline_cloud_download_24)
-            .setContentTitle("test for test")
-            .setLargeIcon(bitmapLargeIcon)
-            .setContentIntent(pendingIntent)
-            .setStyle(NotificationCompat.BigPictureStyle().bigPicture(bitmap))
-            .setContentText("thanks for notification me ")
-            .setPriority(NotificationCompat.PRIORITY_HIGH)
-        with(NotificationManagerCompat.from(this)){
-            notify(NOTIFICATION_ID,builder.build())
+            // Now display the value of selected item
+            // by the Toast message
+            Toast.makeText(this, radioButton.text, Toast.LENGTH_SHORT).show()
         }
     }
 
     private val receiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context?, intent: Intent?) {
+        override fun onReceive(context: Context, intent: Intent?) {
             val id = intent?.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1)
+
+                if (id == downloadID) {
+                    if (getDownloadStatus() == DownloadManager.STATUS_SUCCESSFUL) {
+                        Toast.makeText(this@MainActivity, " Download Completed", Toast.LENGTH_LONG)
+                            .show()
+                        Log.d("TAG", "onReceive: Download Completed")
+                        intent?.putExtra("test", FileStatus.Completed.toString())
+
+                    } else {
+                        try {
+                        Toast.makeText(this@MainActivity, " Download failure", Toast.LENGTH_LONG)
+                            .show()
+                        intent?.putExtra("test", FileStatus.Faliear.toString())
+                        Log.d("TAG", "onReceive: Download not Completed")
+                    }catch (e: Exception) {
+                            Log.d("TAG", "onReceive: Download not Completed${e.localizedMessage}")
+
+                        }
+                }
+            }
         }
     }
 
@@ -108,10 +136,24 @@ class MainActivity : AppCompatActivity() {
                 .setRequiresCharging(false)
                 .setAllowedOverMetered(true)
                 .setAllowedOverRoaming(true)
-
         val downloadManager = getSystemService(DOWNLOAD_SERVICE) as DownloadManager
         downloadID =
             downloadManager.enqueue(request)// enqueue puts the download request in the queue.
+    }
+
+    fun getDownloadStatus(): Int {
+        val query = DownloadManager.Query()
+        query.setFilterById(downloadID)
+        val downloadManager: DownloadManager = getSystemService(DOWNLOAD_SERVICE) as DownloadManager
+        val cursor: Cursor = downloadManager.query(query)
+        if (cursor.moveToFirst()) {
+            while (cursor.isAfterLast) {
+                val coulmnIndex: Int = cursor.getColumnIndex(DownloadManager.COLUMN_STATUS)
+                val state = cursor.getInt(coulmnIndex)
+                return state
+            }
+        }
+        return DownloadManager.ERROR_UNKNOWN
     }
 
     companion object {
@@ -120,44 +162,87 @@ class MainActivity : AppCompatActivity() {
         private const val CHANNEL_ID = "channelId"
     }
 
+    private fun createChannel(channelId: String, channelName: String) {
+        // TODO: Step 1.6 START create a channel
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val notificationChannel = NotificationChannel(
+                channelId,
+                channelName,
+                // TODO: Step 2.4 change importance
+                NotificationManager.IMPORTANCE_HIGH
+            )
+            // TODO: Step 2.6 disable badges for this channel
 
-    fun onRadioButtonClicked(view: View) {
-        if (view is RadioButton) {
-            // Is the button now checked?
-            val checked = view.isChecked
-            // Check which radio button was clicked
-            when (view.getId()) {
-                R.id.radio_glide ->
-                    if (checked) {
-                        Toast.makeText(this, "Radio button selected", Toast.LENGTH_LONG).show()
-                        // Pirates are the best
-                    }
-                R.id.radio_loadapp ->
-                    if (checked) {
-                        Toast.makeText(this, "Radio button selected", Toast.LENGTH_LONG).show()
-                    }
-                R.id.radio_retrofit ->
-                    if (checked) {
-                        Toast.makeText(this, "Radio button selected", Toast.LENGTH_LONG).show()
-                    }
-            }
+            notificationChannel.enableLights(true)
+            notificationChannel.lightColor = Color.RED
+            notificationChannel.enableVibration(true)
+            notificationChannel.description = "Time for download"
+            notificationManager = this.getSystemService(NotificationManager::class.java)
+            notificationManager.createNotificationChannel(notificationChannel)
+
+
         }
     }
 
-    fun download(view: View) {
-        //  download()
-        onRadioButtonClicked(view)
-        //    instanseFromNotif(app = application)
+    fun onRadioButtonClicked(view: View) {
+        if (view is RadioButton) {
+            val intent = Intent(this, DetailActivity::class.java)
+            val checked = view.isChecked
+            // Check which radio button was clicked
+            when (view.getId()) {
+                R.id.radio_button_1 ->
+                    if (checked) {
+                        fileName = "Gide Image Loading "
+                        Log.d("redio", "onRadioButton first  ")
+                        intent.putExtra("Radio", "Gide Image Loading")
+                    }
+                R.id.radio_button_2 ->
+                    if (checked) {
+                        fileName = "Load Current Repository "
+                        Log.d("redio", "onRadioButton   Clicked Load app  ")
+                        intent.putExtra("Radio", "Load Current Repository")
 
-        //TODO step 7 call create channal function
+
+                    }
+                R.id.radio_button_3 ->
+                    if (checked) {
+                        fileName = "Retrofit Type save "
+                        Log.d("redio", "onRadioButton  Clicked retrofit  ")
+                        intent.putExtra("Radio", "Retrofit Type save")
+                    }
+            }
+        } else {
+            Log.d("redio", "onRadioButton  UN Clicked:  ")
+            intent.putExtra("Radio", "not any thing downloading ")
+        }
+
     }
 
-//    private fun instanseFromNotif(app: Application) {
-//        val notificationManager = ContextCompat.getSystemService(
-//            app,
-//            NotificationManager::class.java
-//        ) as NotificationManager
-//        notificationManager.sendNotification(app.getString(R.string.notification_title), app)
-//    }
 
+    fun move(view: ImageView) {
+        val va = ValueAnimator.ofFloat(4f, 0f, 0f, 0f)
+        val startColor = Color.BLUE
+        val endColor = Color.GREEN
+        var cAnimator = ValueAnimator.ofObject(
+            ArgbEvaluator(),
+            startColor,
+            endColor
+        )
+        cAnimator.setDuration(1000)
+        va.duration = 1000 //in millis
+//        va.addUpdateListener { animation -> view.translationX = animation.animatedValue as Float }
+        va.addUpdateListener(object : ValueAnimator.AnimatorUpdateListener {
+            override fun onAnimationUpdate(anamation: ValueAnimator?) {
+                val animated = anamation?.animatedValue as Float
+                view.translationY = animated
+                view.translationX = animated
+            }
+        })
+        va.repeatCount = 3
+        va.reverse()
+        cAnimator.reverse()
+        cAnimator.start()
+        va.start()
+    }
 }
+

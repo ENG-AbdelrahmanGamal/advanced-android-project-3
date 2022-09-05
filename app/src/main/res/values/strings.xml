@@ -1,16 +1,20 @@
 <resources>
     <string name="app_name">ND940C3-Project</string>
     <string name="app_description">Download files from Internet</string>
-
-
     <string name="notification_title">Udacity: Android Kotlin Nanodegree </string>
-
     <string name="title_activity_detail">DetailActivity</string>
     <string name="glide_Image_Loading_Library_by_BumpTech">Glide Image Loading Library by BumpTech</string>
     <string name="LoadApp">LoadApp - current repository by Udacity</string>
     <string name="retrofit">Retrofit_ Type safe HTTP client  for android And java by square ,Inc</string>
     <string name="download">Download</string>
     <string name="notification_channel_id" translatable="false">channel</string>
+    <string name="ok">OK</string>
+    <string name="Filename">File name</string>
+    <string name="status">Status</string>
+    <string name="success">Success Download</string>
+    <string name="failure">failure</string>
+    <string name="lodingfile" >Download running</string>
+
 
 
 </resources>
