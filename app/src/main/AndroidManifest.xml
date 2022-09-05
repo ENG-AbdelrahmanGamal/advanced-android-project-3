@@ -13,10 +13,11 @@
         android:theme="@style/AppTheme"
         >
         <receiver android:name=".receviver.MyReceviver"/>
+
         <activity
             android:name=".DetailActivity"
             android:label="@string/title_activity_detail"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name"

@@ -24,8 +24,8 @@ class DetailActivity : AppCompatActivity() {
         button = findViewById(R.id.detail_button)
         nameFile=findViewById(R.id.tv_filename)
         nameStatus=findViewById(R.id.tv_file_status)
-        nameFile.text=intent.getStringExtra("redio")
-        nameStatus.text=intent.getStringExtra("test")
+        nameFile.text=intent.getStringExtra("filename")
+        nameStatus.text=intent.getStringExtra("status")
         move(nameStatus)
         move(nameFile)
         button.setOnClickListener {
@@ -35,7 +35,7 @@ class DetailActivity : AppCompatActivity() {
     }
     fun move(view: TextView) {
         val startColor=Color.BLUE
-        val endColor=Color.GREEN
+        val endColor=Color.RED
         val va = ValueAnimator.ofFloat(-20f, 20f)
        var cAnimator = ValueAnimator.ofObject(
             ArgbEvaluator(),

@@ -33,9 +33,10 @@ class LoadingButton @JvmOverloads constructor(
 
     init {
         isClickable = true
-     valueAnimator = AnimatorInflater.loadAnimator(context,
+        valueAnimator = AnimatorInflater.loadAnimator(
+            context,
 //            // properties for downloading progress is defined
-                R.animator.animator
+            R.animator.animator
         ) as ValueAnimator
 
         valueAnimator.addUpdateListener(updateListener)
@@ -61,7 +62,6 @@ class LoadingButton @JvmOverloads constructor(
         } finally {
             attr.recycle()
         }
-
     }
 
     override fun onDraw(canvas: Canvas) {
@@ -87,25 +87,26 @@ class LoadingButton @JvmOverloads constructor(
         // write the text on custom button
         paint.color = textColor
         canvas.drawText(buttonText, (width / 2).toFloat(), ((height + 30) / 2).toFloat(), paint)
-
-
     }
+
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.FILL
         textAlign = Paint.Align.CENTER // button text alignment
         textSize = 55.0f //button text size
         typeface = Typeface.create("", Typeface.BOLD) // button text's font style
     }
+
     override fun performClick(): Boolean {
         super.performClick()
         if (buttonState == ButtonState.Completed) buttonState = ButtonState.Loading
         animation()
-
         return true
     }
+
     private fun animation() {
         valueAnimator.start()
     }
+
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         val minw: Int = paddingLeft + paddingRight + suggestedMinimumWidth
         val w: Int = resolveSizeAndState(minw, widthMeasureSpec, 1)

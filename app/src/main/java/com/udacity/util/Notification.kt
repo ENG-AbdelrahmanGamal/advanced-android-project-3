@@ -21,9 +21,9 @@ private val NOTIFICATION_ID=0
 fun NotificationManager.sendNotification(messageBody: String, applicationContext: Context) {
     val contentIntent=Intent(applicationContext,DetailActivity::class.java)
 
-//    contentIntent.putExtra("filename", MainActivity.FileStatus.Completed)
-//    contentIntent.putExtra("status","MainActivity().getDownloadStatus().toString()")
-//
+    contentIntent.putExtra("filename", MainActivity.fileName)
+    contentIntent.putExtra("status",MainActivity.fileStatus)
+
 
     val contentPendingIntent=PendingIntent.getActivity(applicationContext,
         NOTIFICATION_ID,contentIntent,PendingIntent.FLAG_UPDATE_CURRENT)
