@@ -48,7 +48,6 @@ class DetailActivity : AppCompatActivity() {
             )
         })
         cAnimator.setDuration(1000)
-
         va.duration = 2000 //in millis
         va.addUpdateListener { animation -> view.translationX = animation.animatedValue  as Float }
         va.repeatCount = 5

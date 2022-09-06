@@ -3,10 +3,7 @@ package com.udacity
 import android.animation.AnimatorInflater
 import android.animation.ValueAnimator
 import android.content.Context
-import android.graphics.Canvas
-import android.graphics.Color
-import android.graphics.Paint
-import android.graphics.Typeface
+import android.graphics.*
 import android.util.AttributeSet
 import android.view.View
 import androidx.core.content.ContextCompat
@@ -64,29 +61,41 @@ class LoadingButton @JvmOverloads constructor(
         }
     }
 
+
+    private val rect = RectF(
+        740f,
+        60f,
+        830f,
+        140f
+    )
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         paint.strokeWidth = 0f
         paint.color = bgColor
+
         // draw custom button
         canvas.drawRect(0f, 0f, width.toFloat(), height.toFloat(), paint)
 
-        // to show rectangular progress on custom button while file is downloading
         if (buttonState == ButtonState.Loading) {
             paint.color = Color.parseColor("#004349")
             canvas.drawRect(
                 0f, 0f,
                 (width * (progress / 100)).toFloat(), height.toFloat(), paint
             )
+            // draw circle end of text button
+            paint.color = Color.parseColor("#F9A825")
+            canvas.drawArc(rect, 0f, (360 * (progress / 100)).toFloat(), true, paint)
+
         }
-        // check the button state
+
         val buttonText = if (buttonState == ButtonState.Loading)
             resources.getString(R.string.lodingfile)
+
         else resources.getString(R.string.download)
 
-        // write the text on custom button
         paint.color = textColor
         canvas.drawText(buttonText, (width / 2).toFloat(), ((height + 30) / 2).toFloat(), paint)
+
     }
 
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {

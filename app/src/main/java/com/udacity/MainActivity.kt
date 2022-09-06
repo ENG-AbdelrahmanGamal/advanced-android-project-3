@@ -30,31 +30,24 @@ class MainActivity : AppCompatActivity() {
     private var downloadID: Long = 0
     private lateinit var binding: ActivityMainBinding
     private lateinit var notificationManager: NotificationManager
-    private lateinit var pendingIntent: PendingIntent
     lateinit var loadingButton: LoadingButton
     private var checkBox: Boolean = false
-
-    private var radioGroup: RadioGroup? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
         setSupportActionBar(toolbar)
-        //  move()
-        createChannel(getString(R.string.notification_channel_id), CHANNEL_ID)
-        loadingButton = findViewById(R.id.custom_button)
-        fun showToast() {
-            Toast.makeText(
-                this,
-                "please select the file to Download",
-                Toast.LENGTH_LONG
-            ).show()
 
-        }
+        //create a channel for the notification
+        createChannel(getString(R.string.notification_channel_id), CHANNEL_ID)
+
+        loadingButton = findViewById(R.id.custom_button)
+
+
         custom_button.setOnClickListener {
+            //Is RadioButton clicked ?
             if (checkBox) {
                 download()
                 registerReceiver(receiver, IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE))
-                //     complete = true
                 loadingButton.animation
             } else {
                 val handler = Handler()
@@ -63,6 +56,14 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    fun showToast() {
+        Toast.makeText(
+            this,
+            "please select the file to Download",
+            Toast.LENGTH_LONG
+        ).show()
+
+    }
 
     private val receiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent?) {
@@ -180,30 +181,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun move(view: LoadingButton) {
-        val va = ValueAnimator.ofFloat(4f, 0f, 0f, 0f)
-        val startColor = Color.BLUE
-        val endColor = Color.GREEN
-        var cAnimator = ValueAnimator.ofObject(
-            ArgbEvaluator(),
-            startColor,
-            endColor
-        )
-        cAnimator.setDuration(1000)
-        va.duration = 1000 //in millis
-//        va.addUpdateListener { animation -> view.translationX = animation.animatedValue as Float }
-        va.addUpdateListener(object : ValueAnimator.AnimatorUpdateListener {
-            override fun onAnimationUpdate(anamation: ValueAnimator?) {
-                val animated = anamation?.animatedValue as Float
-                view.translationY = animated
-                view.translationX = animated
-            }
-        })
-        va.repeatCount = 3
-        va.reverse()
-        cAnimator.reverse()
-        cAnimator.start()
-        va.start()
-    }
+
 }
 

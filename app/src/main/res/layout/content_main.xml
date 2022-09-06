@@ -5,8 +5,7 @@
     android:id="@+id/main_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity"
-  >
+    tools:context=".MainActivity">
 
     <com.udacity.LoadingButton
         android:id="@+id/custom_button"
@@ -15,11 +14,11 @@
         android:layout_marginStart="10dp"
         android:layout_marginEnd="10dp"
         android:layout_marginBottom="100dp"
-        android:alpha="1"
-        app:textColor="@color/white"
-        android:background="#FF9800"
+        android:alpha=".8"
+        android:background="@drawable/ripple"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:textColor="@drawable/custom_button" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

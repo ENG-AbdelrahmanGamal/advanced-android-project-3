@@ -13,10 +13,6 @@ import com.udacity.MainActivity
 import com.udacity.R
 
 private val NOTIFICATION_ID=0
-    private val REQUEST_CODE = 0
-    private val FLAGS = 0
-
-
 
 fun NotificationManager.sendNotification(messageBody: String, applicationContext: Context) {
     val contentIntent=Intent(applicationContext,DetailActivity::class.java)
@@ -41,8 +37,4 @@ fun NotificationManager.sendNotification(messageBody: String, applicationContext
 
     notify(NOTIFICATION_ID, builder.build())
 
-}
-
-fun NotificationManager.cancelNotifications() {
-    cancelAll()
 }
